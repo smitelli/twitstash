@@ -36,7 +36,7 @@
       $data = array();
       if (is_array($tweets) && count($tweets) > 0) {
         // We have tweets; loop through them all
-        foreach ($tweets as $tweet) {        
+        foreach ($tweets as $tweet) {
           // Custom tweet object
           $tmp = (object) array(
             'id'         => $tweet->id_str,
@@ -46,7 +46,7 @@
             'text'       => $tweet->text,
             'source'     => $tweet->source,
           );
-          
+
           // Track the lowest tweet ID that has been encountered
           if (bccomp($this->lowID, $tmp->id) > 0) {
             $this->lowID = bcsub($tmp->id, '1');

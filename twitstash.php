@@ -9,7 +9,7 @@
       require_once $class_file;
     }
   });
-  
+
   // Load and parse the configuration file
   $config = @parse_ini_file(APP_DIR . '/config.ini', TRUE);
   if (empty($config)) {
@@ -24,5 +24,5 @@
     print_r($tweets);
     echo $twitter->lowID;
   }
-  
+
 ?>
