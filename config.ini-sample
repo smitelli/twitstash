@@ -1,0 +1,18 @@
+[twitter]
+; To generate these:
+; 1. Visit https://dev.twitter.com/apps/new and log in if needed.
+; 2. Fill in the whole form, leave "Callback URL" empty. Make sure the access
+; level is "Read and Write."
+; 3. Copy "Consumer key" and "Consumer secret" values.
+; 4. Create a new access token (if you don't have one)
+; 5. Copy "Access token" and "Access token secret" values.
+consumer_key        = "FILL ME IN"
+consumer_secret     = "FILL ME IN"
+access_token        = "FILL ME IN"
+access_token_secret = "FILL ME IN"
+screen_name = "smitelli"
+
+[misc]
+; This should be set to a timezone that is meaningful to you. All dates/times
+; stored in the database will use this as the timezone offset.
+timezone = "America/New_York"
