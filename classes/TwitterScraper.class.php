@@ -4,6 +4,8 @@
     public  $lowID;
     private $config;
     private $twitter;
+    private $placeCache;
+    private $urlCache;
 
     public function __construct($config) {
       $this->config  = (object) $config;
@@ -13,7 +15,17 @@
         $this->config->access_token,
         $this->config->access_token_secret
       );
+      $this->placeCache = array();
+      $this->urlCache   = array();
       $this->resetLowID();
+    }
+
+    public function getPlaceCache() {
+      return $this->placeCache;
+    }
+
+    public function getURLCache() {
+      return $this->urlCache;
     }
 
     public function resetLowID() {
@@ -40,11 +52,14 @@
           // Custom tweet object
           $tmp = (object) array(
             'id'         => $tweet->id_str,
-            'rt_id'      => 0,
-            'reply_id'   => $tweet->in_reply_to_status_id_str ?: 0,
             'created_at' => date('Y-m-d H:i:s', strtotime($tweet->created_at)),
             'text'       => $tweet->text,
             'source'     => $tweet->source,
+            'reply_id'   => $tweet->in_reply_to_status_id_str ?: 0,
+            'rt_id'      => 0,
+            'place_id'   => 0,
+            'latitude'   => 0,
+            'longitude'  => 0
           );
 
           // Track the lowest tweet ID that has been encountered
@@ -52,11 +67,31 @@
             $this->lowID = bcsub($tmp->id, '1');
           }
 
-          // If this is a retweet, grab the original tweet's text
+          // If this is a retweet, grab the original tweet's text instead
           if (isset($tweet->retweeted_status)) {
-            $tmp->rt_id    = $tweet->retweeted_status->id_str;
-            $tmp->reply_id = $tweet->retweeted_status->in_reply_to_status_id_str ?: 0;
             $tmp->text     = $tweet->retweeted_status->text;
+            $tmp->reply_id = $tweet->retweeted_status->in_reply_to_status_id_str ?: 0;
+            $tmp->rt_id    = $tweet->retweeted_status->id_str;
+          }
+
+          // If this tweet has a "place" ID, store the data that comes with it
+          if (is_object($tweet->place)) {
+            $tmp->place_id = $tweet->place->id;
+            $this->cachePlaceData($tweet->place);
+          }
+
+          // If this tweet has point coordinates, store them
+          if (is_object($tweet->coordinates)) {
+            $tmp->longitude = $tweet->coordinates->coordinates[0];
+            $tmp->latitude  = $tweet->coordinates->coordinates[1];
+          }
+
+          // If this tweet references any t.co URLs or images, store them
+          if (isset($tweet->entities->urls) && count($tweet->entities->urls) > 0) {
+            $this->cacheURLData($tweet->entities->urls);
+          }
+          if (isset($tweet->entities->media) && count($tweet->entities->media) > 0) {
+            $this->cacheURLData($tweet->entities->media);
           }
 
           $data[] = $tmp;
@@ -64,6 +99,44 @@
       }
 
       return $data;
+    }
+
+    private function cachePlaceData(&$place) {
+      // Attempt to find the "centroid" of this place by averaging all the found
+      // lat/lon pairs together and treating that average as a point.
+      $centroid = (object) array(
+        'latitude'  => 0,
+        'longitude' => 0,
+        'counter'   => 0,
+      );
+      foreach ($place->bounding_box->coordinates as $polygon) {
+        foreach ($polygon as $point) {
+          $centroid->longitude += $point[0];
+          $centroid->latitude  += $point[1];
+          $centroid->counter++;
+        }
+      }
+      if ($centroid->counter > 0) {
+        $centroid->latitude  /= $centroid->counter;
+        $centroid->longitude /= $centroid->counter;
+      }
+
+      $this->placeCache[$place->id] = (object) array(
+        'place_type'   => $place->place_type,
+        'full_name'    => $place->full_name,
+        'country'      => $place->country,
+        'centroid_lat' => $centroid->latitude,
+        'centroid_lon' => $centroid->longitude
+      );
+    }
+
+    private function cacheURLData(&$urls) {
+      foreach ($urls as $url) {
+        $this->urlCache[] = (object) array(
+          'url'          => $url->url,
+          'expanded_url' => $url->expanded_url
+        );
+      }
     }
   }
 

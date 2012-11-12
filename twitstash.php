@@ -24,5 +24,8 @@
     print_r($tweets);
     echo $twitter->lowID;
   }
+  
+  print_r($twitter->getPlaceCache());
+  print_r($twitter->getURLCache());
 
 ?>
