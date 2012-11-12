@@ -12,6 +12,17 @@ access_token        = "FILL ME IN"
 access_token_secret = "FILL ME IN"
 screen_name = "smitelli"
 
+[mysql]
+; The host (and optionally, port) of the MySQL server
+server = "127.0.0.1:3306"
+
+; Name of the database to use
+database = "twitstash"
+
+; User name and password
+username = "FILL ME IN"
+password = "FILL ME IN"
+
 [misc]
 ; This should be set to a timezone that is meaningful to you. All dates/times
 ; stored in the database will use this as the timezone offset.

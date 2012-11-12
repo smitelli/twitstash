@@ -17,15 +17,16 @@
   }
   date_default_timezone_set($config['misc']['timezone']);
 
-  // This class does all the heavy iterating
-  $twitter = new TwitterScraper($config['twitter']);
+  // These classes do all the gruntwork here
+  $twitter  = new TwitterScraper($config['twitter']);
+  $database = new DBModel($config['mysql']);
 
   while ($tweets = $twitter->fetchTimeline()) {
-    print_r($tweets);
-    echo $twitter->lowID;
+    //print_r($tweets);
+    //echo $twitter->getLowID();
   }
   
-  print_r($twitter->getPlaceCache());
-  print_r($twitter->getURLCache());
+  //print_r($twitter->getPlaceCache());
+  //print_r($twitter->getURLCache());
 
 ?>

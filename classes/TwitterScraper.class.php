@@ -1,9 +1,9 @@
 <?php
 
   class TwitterScraper {
-    public  $lowID;
     private $config;
     private $twitter;
+    private $lowID;
     private $placeCache;
     private $urlCache;
 
@@ -26,6 +26,10 @@
 
     public function getURLCache() {
       return $this->urlCache;
+    }
+    
+    public function getLowID() {
+      return $this->lowID;
     }
 
     public function resetLowID() {
@@ -53,7 +57,7 @@
           $tmp = (object) array(
             'id'         => $tweet->id_str,
             'created_at' => date('Y-m-d H:i:s', strtotime($tweet->created_at)),
-            'text'       => $tweet->text,
+            'text'       => html_entity_decode($tweet->text),
             'source'     => $tweet->source,
             'reply_id'   => $tweet->in_reply_to_status_id_str ?: 0,
             'rt_id'      => 0,
@@ -68,29 +72,29 @@
           }
 
           // If this is a retweet, grab the original tweet's text instead
-          if (isset($tweet->retweeted_status)) {
-            $tmp->text     = $tweet->retweeted_status->text;
+          if (isset($tweet->retweeted_status) && is_object($tweet->retweeted_status)) {
+            $tmp->text     = html_entity_decode($tweet->retweeted_status->text);
             $tmp->reply_id = $tweet->retweeted_status->in_reply_to_status_id_str ?: 0;
             $tmp->rt_id    = $tweet->retweeted_status->id_str;
           }
 
           // If this tweet has a "place" ID, store the data that comes with it
-          if (is_object($tweet->place)) {
+          if (isset($tweet->place) && is_object($tweet->place)) {
             $tmp->place_id = $tweet->place->id;
             $this->cachePlaceData($tweet->place);
           }
 
           // If this tweet has point coordinates, store them
-          if (is_object($tweet->coordinates)) {
+          if (isset($tweet->coordinates) && is_object($tweet->coordinates)) {
             $tmp->longitude = $tweet->coordinates->coordinates[0];
             $tmp->latitude  = $tweet->coordinates->coordinates[1];
           }
 
           // If this tweet references any t.co URLs or images, store them
-          if (isset($tweet->entities->urls) && count($tweet->entities->urls) > 0) {
+          if (isset($tweet->entities->urls) && is_array($tweet->entities->urls)) {
             $this->cacheURLData($tweet->entities->urls);
           }
-          if (isset($tweet->entities->media) && count($tweet->entities->media) > 0) {
+          if (isset($tweet->entities->media) && is_array($tweet->entities->media)) {
             $this->cacheURLData($tweet->entities->media);
           }
 

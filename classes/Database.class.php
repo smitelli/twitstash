@@ -2,15 +2,17 @@
 
   class Database {
     const CHARSET = 'UTF8';
+    private static $config  = NULL;
     private static $dbh     = NULL;
     private static $sth     = NULL;
     private static $q_count = 0;
     private static $q_timer = 0;
 
-    public function __construct() {
+    public function __construct($config) {
       if (is_null(self::$dbh)) {
         try {
-          $this->db_connect(Config::MYSQL_HOSTNAME, Config::MYSQL_USERNAME, Config::MYSQL_PASSWORD, Config::MYSQL_DATABASE);
+          self::$config = (object) $config;
+          self::db_connect(self::$config->server, self::$config->username, self::$config->password, self::$config->database);
 
         } catch (PDOException $e) {
           // We need to catch the PDO exception, as its error message will contain the MySQL login information.
