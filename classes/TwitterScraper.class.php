@@ -3,9 +3,9 @@
   class TwitterScraper {
     private $config;
     private $twitter;
-    private $lowID;
     private $placeCache;
     private $urlCache;
+    private $lowID;
 
     public function __construct($config) {
       $this->config  = (object) $config;

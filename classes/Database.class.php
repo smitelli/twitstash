@@ -2,17 +2,15 @@
 
   class Database {
     const CHARSET = 'UTF8';
-    private static $config  = NULL;
-    private static $dbh     = NULL;
-    private static $sth     = NULL;
-    private static $q_count = 0;
-    private static $q_timer = 0;
+    private static $cfg = NULL;
+    private static $dbh = NULL;
+    private static $sth = NULL;
 
     public function __construct($config) {
       if (is_null(self::$dbh)) {
         try {
-          self::$config = (object) $config;
-          self::db_connect(self::$config->server, self::$config->username, self::$config->password, self::$config->database);
+          self::$cfg = (object) $config;
+          self::db_connect(self::$cfg->server, self::$cfg->username, self::$cfg->password, self::$cfg->database);
 
         } catch (PDOException $e) {
           // We need to catch the PDO exception, as its error message will contain the MySQL login information.
@@ -22,13 +20,11 @@
     }
 
     public function db_connect($host, $user, $pass, $db) {
-      self::$sth     = NULL;
-      self::$q_count = 0;
-      self::$q_timer = 0;
-
       self::$dbh = new PDO("mysql:host={$host};dbname={$db}", $user, $pass);
+      self::$sth = NULL;
+      
       self::$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      self::$dbh->exec('SET CHARACTER SET "' . self::CHARSET . '"');
+      self::db_exec_single('SET CHARACTER SET "' . self::CHARSET . '"');
     }
 
     public function db_disconnect() {
@@ -37,72 +33,28 @@
     }
 
     public function db_exec_single($sql) {
-      $start_time = microtime(TRUE);
-
-      $affected_rows = self::$dbh->exec($sql);
-
-      self::$q_timer += (microtime(TRUE) - $start_time);
-      self::$q_count++;
-
-      return $affected_rows;
+      return self::$dbh->exec($sql);
     }
 
     public function db_query($sql, $params = FALSE) {
-      $start_time = microtime(TRUE);
-
       if ($params === FALSE) {
         self::$sth = self::$dbh->query($sql);
 
-      } else if (is_array($params)) {
+      } else if (is_array($params) || is_object($params)) {
+        $params = (array) $params;  //make sure objects become assoc. arrays
         self::$sth = self::$dbh->prepare($sql);
         self::$sth->execute($params);
-
-      } else if (is_object($params)) {
-        self::$sth = self::$dbh->prepare($sql);
-        self::$sth->execute((array) $params);
+      
+      } else {
+        return FALSE;
       }
 
       self::$sth->setFetchMode(PDO::FETCH_OBJ);
-
-      self::$q_timer += (microtime(TRUE) - $start_time);
-      self::$q_count++;
-
       return self::$sth->rowCount();
     }
 
     public function db_fetch() {
       return self::$sth->fetch();
-    }
-
-    public function db_fetch_all() {
-      return self::$sth->fetchAll();
-    }
-
-    public function db_fetch_eav_to_object($key_column, $value_column) {
-      $obj = new StdClass();
-
-      while ($row = self::$sth->fetch()) {
-        $key = $row->$key_column;
-        $obj->$key = $row->$value_column;
-      }
-
-      return $obj;
-    }
-
-    public function db_last_insert_id() {
-      return self::$dbh->lastInsertId();
-    }
-
-    public function db_last_error() {
-      return self::$sth->errorInfo();
-    }
-
-    public function db_query_count() {
-      return self::$q_count;
-    }
-
-    public function db_query_msec() {
-      return round(self::$q_timer * 1000, 2);  //convert usec to msec
     }
   }
 
