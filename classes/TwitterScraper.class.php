@@ -61,7 +61,7 @@
             'source'     => $tweet->source,
             'reply_id'   => $tweet->in_reply_to_status_id_str ?: 0,
             'rt_id'      => 0,
-            'place_id'   => 0,
+            'place_id'   => '',
             'latitude'   => 0,
             'longitude'  => 0
           );
