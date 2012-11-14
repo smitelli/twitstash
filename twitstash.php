@@ -17,14 +17,22 @@
   }
   date_default_timezone_set($config['misc']['timezone']);
 
-  // These classes do all the gruntwork here
+  // These classes do all the gruntwork for this script
   $twitter  = new TwitterScraper($config['twitter']);
   $database = new DBModel($config['mysql']);
 
+  $database->resetTouched();
+  $stop_at = $database->highestTweetID();
+  
   while ($tweets = $twitter->fetchTimeline()) {
-    //print_r($tweets);
-    //echo $twitter->getLowID();
+    // Insert a page of tweets
+    $database->tweetInsert($tweets);
+    
+    // If we've seen enough tweets, don't request any more
+    if ($twitter->getLowID() < $stop_at) break;
   }
+  
+  $database->deleteUntouchedSince($twitter->getLowID());
   
   //print_r($twitter->getPlaceCache());
   //print_r($twitter->getURLCache());

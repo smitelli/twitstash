@@ -27,6 +27,7 @@
       self::$q_timer = 0;
 
       self::$dbh = new PDO("mysql:host={$host};dbname={$db}", $user, $pass);
+      self::$dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       self::$dbh->exec('SET CHARACTER SET "' . self::CHARSET . '"');
     }
 
@@ -55,6 +56,10 @@
       } else if (is_array($params)) {
         self::$sth = self::$dbh->prepare($sql);
         self::$sth->execute($params);
+
+      } else if (is_object($params)) {
+        self::$sth = self::$dbh->prepare($sql);
+        self::$sth->execute((array) $params);
       }
 
       self::$sth->setFetchMode(PDO::FETCH_OBJ);
@@ -87,7 +92,7 @@
     public function db_last_insert_id() {
       return self::$dbh->lastInsertId();
     }
-    
+
     public function db_last_error() {
       return self::$sth->errorInfo();
     }
