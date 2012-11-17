@@ -1,5 +1,12 @@
 <?php
 
+  /**
+   * Twitter Scraper Class. Provides an interface to iterate over "pages" of the
+   * Twitter API and return relevant data from each tweet in a custom format.
+   * @author Scott Smitelli
+   * @package twitstash
+   */
+
   class TwitterScraper {
     private $config;
     private $twitter;
@@ -7,6 +14,12 @@
     private $urlCache;
     private $lowID;
 
+    /**
+     * Constructor function. Parses a config array for 'consumer_key',
+     * 'consumer_secret', 'access_token', and 'access_token_secret' keys.
+     * @access public
+     * @param array $config The configuration array
+     */
     public function __construct($config) {
       $this->config  = (object) $config;
       $this->twitter = new TwitterOAuth(
@@ -20,23 +33,55 @@
       $this->resetLowID();
     }
 
+    /**
+     * Returns the current cache of every "place" this object has encountered
+     * since it was instantiated.
+     * @access public
+     * @return array An array of "place" objects
+     */
     public function getPlaceCache() {
       return $this->placeCache;
     }
 
+    /**
+     * Returns the current cache of every URL this object has encountered since
+     * it was instantiated.
+     * @access public
+     * @return array An array of URL objects
+     */
     public function getURLCache() {
       return $this->urlCache;
     }
     
+    /**
+     * Returns the lowest ID number that has been encountered since the last
+     * time resetLowID() was called. This ID is represented as a string!
+     * @access public
+     * @return string The lowest ID seen so far
+     */
     public function getLowID() {
       return $this->lowID;
     }
 
+    /**
+     * Resets the "lowest" ID number by setting it to the highest possible ID
+     * that Twitter seems to be able to return.
+     * @access public
+     */
     public function resetLowID() {
       // The highest conceivable tweet ID (2^63 - 2), found with trial and error
       $this->lowID = bcsub(bcpow('2', '63'), '2');
     }
 
+    /**
+     * Downloads a list of tweets from Twitter. The tweets will all be older
+     * than the max ID seen so far. As tweets are loaded, the max ID will be
+     * decremented accordingly. Any "place" or URL objects encountered will be
+     * cached for later use. The resulting custom tweet objects will be returned
+     * in an array.
+     * @access public
+     * @return array Custom tweet objects containing data from this run
+     */
     public function fetchTimeline() {
       // Query Twitter for the list of recent tweets from the specified user
       $tweets = $this->twitter->get('https://api.twitter.com/1.1/statuses/user_timeline.json', array(
@@ -105,6 +150,11 @@
       return $data;
     }
 
+    /**
+     * When a "place" object is encountered, store the important data in a
+     * custom object and append it to the respective cache array for later use.
+     * @access private
+     */
     private function cachePlaceData(&$place) {
       // Attempt to find the "centroid" of this place by averaging all the found
       // lat/lon pairs together and treating that average as a point.
@@ -113,18 +163,19 @@
         'longitude' => 0,
         'counter'   => 0,
       );
-      foreach ($place->bounding_box->coordinates as $polygon) {
-        foreach ($polygon as $point) {
+      foreach ($place->bounding_box->coordinates as $polygon) {  //single bounding box...
+        foreach ($polygon as $point) {  //single point within this bounding box
           $centroid->longitude += $point[0];
           $centroid->latitude  += $point[1];
           $centroid->counter++;
         }
       }
-      if ($centroid->counter > 0) {
+      if ($centroid->counter > 0) {  //don't divide by zero
         $centroid->latitude  /= $centroid->counter;
         $centroid->longitude /= $centroid->counter;
       }
 
+      // Custom "place" object
       $this->placeCache[$place->id] = (object) array(
         'place_type'   => $place->place_type,
         'full_name'    => $place->full_name,
@@ -134,8 +185,14 @@
       );
     }
 
+    /**
+     * When a URL object is encountered, store the important data in a custom
+     * object and append it to the respective cache array for later use.
+     * @access private
+     */
     private function cacheURLData(&$urls) {
       foreach ($urls as $url) {
+        // Custom URL object
         $this->urlCache[] = (object) array(
           'url'          => $url->url,
           'expanded_url' => $url->expanded_url

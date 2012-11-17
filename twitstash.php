@@ -1,5 +1,12 @@
 <?php
 
+  /**
+   * twitstash: Tweetin' care of business and stashing overtime.
+   *
+   * @author Scott Smitelli
+   * @package twitstash
+   */
+
   // Support autoloading classes as they are needed
   define('APP_DIR', realpath(dirname(__FILE__)));
   spl_autoload_register(function($class_name) {
