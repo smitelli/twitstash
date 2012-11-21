@@ -32,7 +32,7 @@
     
     /**
      * Resets the "touched" status of every tweet (marks them as "untouched.")
-     * @access puclic
+     * @access public
      */
     public function resetTouched() {
       // Mark every tweet as untouched
