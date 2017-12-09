@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `tweets` (
 --
 
 CREATE TABLE IF NOT EXISTS `urls` (
-  `url` varchar(255) NOT NULL,
+  `url` varchar(100) NOT NULL,
   `expanded_url` varchar(255) NOT NULL,
   PRIMARY KEY (`url`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
