@@ -13,8 +13,10 @@ access_token_secret = "FILL ME IN"
 screen_name = "smitelli"
 
 [mysql]
-; The host (and optionally, port) of the MySQL server
+; The hostname (and optionally, port) of the MySQL server.
+; If socket is a string (not FALSE), server is ignored.
 server = "127.0.0.1"
+socket = ""
 
 ; Name of the database to use
 database = "twitstash"
