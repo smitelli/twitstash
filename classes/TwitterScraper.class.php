@@ -52,7 +52,7 @@
     public function getURLCache() {
       return $this->urlCache;
     }
-    
+
     /**
      * Returns the lowest ID number that has been encountered since the last
      * time resetLowID() was called. This ID is represented as a string!
@@ -91,7 +91,8 @@
         'trim_user'           => TRUE,
         'exclude_replies'     => FALSE,
         'contributor_details' => TRUE,
-        'include_rts'         => TRUE
+        'include_rts'         => TRUE,
+        'tweet_mode'          => 'extended'
       ));
 
       $data = array();
@@ -102,7 +103,7 @@
           $tmp = (object) array(
             'id'         => $tweet->id_str,
             'created_at' => date('Y-m-d H:i:s', strtotime($tweet->created_at)),
-            'text'       => html_entity_decode($tweet->text),
+            'text'       => html_entity_decode($tweet->full_text),
             'source'     => $tweet->source,
             'reply_id'   => $tweet->in_reply_to_status_id_str ?: 0,
             'rt_id'      => 0,
@@ -118,7 +119,7 @@
 
           // If this is a retweet, grab the original tweet's text instead
           if (isset($tweet->retweeted_status) && is_object($tweet->retweeted_status)) {
-            $tmp->text     = html_entity_decode($tweet->retweeted_status->text);
+            $tmp->text     = html_entity_decode($tweet->retweeted_status->full_text);
             $tmp->reply_id = $tweet->retweeted_status->in_reply_to_status_id_str ?: 0;
             $tmp->rt_id    = $tweet->retweeted_status->id_str;
           }

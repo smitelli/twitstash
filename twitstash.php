@@ -31,24 +31,24 @@
   // Ensure the DB is in a good state; find the most recently stored ID
   $database->resetTouched();
   $stop_at = $database->getHighID();
-  
+
   // Go through every "page" of API results
   $page = 0;
   while ($tweets = $twitter->fetchTimeline()) {
     echo 'Reading page ' . (++$page) . "...\n";
     $database->insertTweets($tweets);
-    
+
     // If we've seen an ID that the DB already has, stop making requests
     if ($twitter->getLowID() < $stop_at) break;
   }
-  
+
   // Mark tweets that have "gone away" as being deleted
   $database->deleteUntouchedSince($twitter->getLowID());
-  
+
   // Send all places and URLs seen during API parsing to the DB
   $database->insertPlaces($twitter->getPlaceCache());
   $database->insertURLs($twitter->getURLCache());
-  
+
   echo "Done.\n";
 
 ?>

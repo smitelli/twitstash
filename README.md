@@ -21,20 +21,20 @@ will work. (I personally had issues inserting emoji characters on MySQL 5.1.51,
 but I didn't pursue it too far. If you encounter a similar problem, an easy hack
 is to set the `text` column to `VARBINARY(140)` instead of `VARCHAR(140)`.)
 
-###To install:
+### To install:
 
 1.  `git clone --recursive https://github.com/smitelli/twitstash.git && cd twitstash`
 
 2.  Ensure you have an empty database created for the stored tweets, and that
     there is a user account that can update this database.
-    
+
 3.  `mysql --user=YOUR_USER --password YOUR_DATABASE < twitstash.sql`
 
 4.  `cp config.ini-sample config.ini`
 
 5.  Edit `config.ini` to suit your fancy. You'll have to put your own Twitter
     and MySQL authentication in there.
-    
+
 6.  `chmod a+x twitstash.sh`
 
 7.  `./twitstash.sh`
@@ -55,7 +55,7 @@ Storage Format
 Data collected by twitstash is kept in three tables. The following is a list of
 columns and what types of data you can expect in each:
 
-###tweets
+### tweets
 
 *   `id` - Twitter's ID number for this tweet.
 *   `created_at` - The date and time this tweet was created. This time is stored
@@ -81,7 +81,7 @@ columns and what types of data you can expect in each:
     twitstash is run, the more accurate this column becomes. NULL if this tweet
     was never deleted (or, at least, it was not deleted when we last checked).
 
-###places
+### places
 
 *   `id` - A 16-digit hex string identifying this place.
 *   `place_type` - One of 'city', 'neighborhood', or 'admin'. There may be more.
@@ -93,7 +93,7 @@ columns and what types of data you can expect in each:
 See `tweets.latitude` and `tweets.longitude` for info on the exact format of the
 latitude/longitude pairs.
 
-###urls
+### urls
 
 *   `url` - The shortened t.co link present in a tweet's text.
 *   `expanded_url` - The URL that the shortened link points to.
