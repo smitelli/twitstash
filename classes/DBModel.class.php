@@ -26,7 +26,7 @@
      */
     public function getHighID() {
       // Find the highest 'id' field in the tweet table
-      self::db_query('SELECT max(`id`) as `max_id` FROM `tweets`');
+      self::db_query('SELECT max(`id`) AS `max_id` FROM `tweets`');
       return self::db_fetch()->max_id ?: '0';
     }
 
@@ -36,7 +36,7 @@
      */
     public function resetTouched() {
       // Mark every tweet as untouched
-      self::db_exec_single("UPDATE `tweets` SET `touched` = 0");
+      self::db_exec_single("UPDATE `tweets` SET `touched` = 0 WHERE `touched` != 0");
     }
 
     /**
